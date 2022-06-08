@@ -50,8 +50,9 @@ Token parseNum(int curr)
 
     } while (chr >= '0' && chr <= '9');
 
-    if(chr == EOF) eof_reached = 1;
-    Token token = { WG_Number, &num };
+    if (chr == EOF)
+        eof_reached = 1;
+    Token token = {WG_Number, &num};
     return token;
 }
 
@@ -81,7 +82,8 @@ Token parseString(char curr, char delim)
 
     curr = getc(workfile);
 
-    if(curr == EOF) eof_reached = 1;
+    if (curr == EOF)
+        eof_reached = 1;
     return token;
 }
 
@@ -109,7 +111,8 @@ Token parseName(char curr)
         }
     } while ((curr >= 'a' && curr <= 'z') || (curr >= 'A' && curr <= 'Z'));
 
-    if(curr == EOF) eof_reached = 1;
+    if (curr == EOF)
+        eof_reached = 1;
 
     return token;
 }
@@ -118,7 +121,8 @@ Token requestNextToken()
 {
 
     Token token;
-    if(eof_reached) {
+    if (eof_reached)
+    {
         token.value = NULL;
         token.type = WG_Delimiter;
 
@@ -155,11 +159,14 @@ Token requestNextToken()
     {
         token.value = NULL;
         token.type = WG_Delimiter;
-    } else if(chr == EOF) {
+    }
+    else if (chr == EOF)
+    {
         token.value = NULL;
         token.type = WG_Delimiter;
     }
 
-    if(peekNext() == EOF) eof_reached = 1;
+    if (peekNext() == EOF)
+        eof_reached = 1;
     return token;
 }

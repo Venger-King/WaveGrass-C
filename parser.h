@@ -6,17 +6,23 @@
 
 int needMore = TRUE;
 
-void parse(FILE * file) {
+void parse(FILE *file)
+{
     setWorkFile(file);
 
     Token token;
-    while(needMore) {
+    while (needMore)
+    {
         token = requestNextToken();
-        if(token.type == WG_Number) {
-            printf("%d\n", * (double *) token.value);
-        } else {
-            printf("%s\n", (char *) token.value);
+        if (token.type == WG_Number)
+        {
+            printf("%d\n", *(double *)token.value);
         }
-        if(token.type == WG_Delimiter) needMore = FALSE;
+        else
+        {
+            printf("%s\n", (char *)token.value);
+        }
+        if (token.type == WG_Delimiter)
+            needMore = FALSE;
     }
 }
