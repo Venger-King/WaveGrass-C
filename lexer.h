@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 enum TokenTypes
 {
@@ -6,6 +7,7 @@ enum TokenTypes
     WG_String,
     WG_Variable,
     WG_Keyword,
+    WG_Assigenment,
     WG_Operators,
     WG_Comparators,
     WG_Delimiter
@@ -40,7 +42,7 @@ Token parseNum(int curr)
 
     do
     {
-        chr = getc(workfile);
+        chr = fgetc(workfile);
         if (!(chr >= '0' && chr <= '9'))
         {
             fseek(workfile, -1, SEEK_CUR);
@@ -59,28 +61,31 @@ Token parseNum(int curr)
 Token parseString(char curr, char delim)
 {
     Token token;
-    unsigned long int length = 0;
+    token.type = WG_String;
+
+    long int length = 0;
+
     do
     {
-        curr = getc(workfile);
+        curr = fgetc(workfile);
+
+        if (curr == EOF)
+        {
+            exit(1);
+        }
+
         length++;
 
         if (curr == delim)
         {
             fseek(workfile, -length, SEEK_CUR);
             length--;
-            char value[length];
-            for (unsigned long int i = 0; i < length; i++)
-            {
-                value[i] = getc(workfile);
-            }
-            token.value = &value;
-            token.type = WG_String;
+            
+            token.value = malloc(sizeof(unsigned char) * length);
+            fread(token.value, 1, length, workfile);
         }
     } while (curr != delim);
-    printf("%s\n", (char *)(token.value));
-
-    curr = getc(workfile);
+    curr = fgetc(workfile);
 
     if (curr == EOF)
         eof_reached = 1;
@@ -90,29 +95,35 @@ Token parseString(char curr, char delim)
 Token parseName(char curr)
 {
     Token token;
-    unsigned long int length;
+    token.type = WG_Variable;
+    long int length = 1;
 
     do
     {
-        curr = getc(workfile);
+        curr = fgetc(workfile);
         length++;
-
         if (!(curr >= 'a' && curr <= 'z') || (curr >= 'A' && curr <= 'Z'))
         {
-            fseek(workfile, -length, SEEK_CUR);
-            length--;
-            char value[length];
-            for (unsigned long int i = 0; i < length; i++)
-            {
-                value[i] = getc(workfile);
+            if(curr == EOF) {
+                length--;
             }
-            token.value = &value;
-            token.type = WG_Variable;
+
+            fseek(workfile, -length, SEEK_CUR);
+
+            if(curr != EOF) {
+                length--;
+            }
+
+            token.value = malloc(sizeof(unsigned char) * length);
+            fread(token.value, 1, length, workfile);
         }
+
     } while ((curr >= 'a' && curr <= 'z') || (curr >= 'A' && curr <= 'Z'));
 
     if (curr == EOF)
         eof_reached = 1;
+
+    printf("%s|hallo\n", (char *) token.value);
 
     return token;
 }
@@ -130,11 +141,11 @@ Token requestNextToken()
     }
 
     int chr;
-    chr = getc(workfile);
+    chr = fgetc(workfile);
 
     while (chr == ' ')
     {
-        chr = getc(workfile);
+        chr = fgetc(workfile);
     }
 
     if (chr >= '0' && chr <= '9')
@@ -152,6 +163,12 @@ Token requestNextToken()
     else if (chr == '+' || chr == '-' || chr == '*' || chr == '/')
     {
         token.type = WG_Operators;
+        int value = chr;
+        token.value = &value;
+    }
+    else if (chr == '=')
+    {
+        token.type = WG_Assigenment;
         int value = chr;
         token.value = &value;
     }

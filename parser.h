@@ -16,11 +16,11 @@ void parse(FILE *file)
         token = requestNextToken();
         if (token.type == WG_Number)
         {
-            printf("%d\n", *(double *)token.value);
+            printf("%d\n", * (double *) token.value);
         }
         else
         {
-            printf("%s\n", (char *)token.value);
+            printf("%s\n", (char *) token.value);
         }
         if (token.type == WG_Delimiter)
             needMore = FALSE;
