@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "stack.h"
 
 enum TokenTypes
 {
@@ -10,10 +11,12 @@ enum TokenTypes
     WG_Assigenment,
     WG_Operators,
     WG_Comparators,
-    WG_Delimiter
+    WG_Delimiter,
+    WG_Bracket
 };
 
 int eof_reached = 0;
+Stack * bracket_stack;
 
 typedef struct
 {
@@ -26,6 +29,8 @@ FILE *workfile;
 int setWorkFile(FILE *file)
 {
     workfile = file;
+
+    bracket_stack = createStack(2);
 }
 
 int peekNext()
@@ -80,7 +85,7 @@ Token parseString(char curr, char delim)
         {
             fseek(workfile, -length, SEEK_CUR);
             length--;
-            
+
             token.value = malloc(sizeof(unsigned char) * length);
             fread(token.value, 1, length, workfile);
         }
@@ -123,8 +128,6 @@ Token parseName(char curr)
     if (curr == EOF)
         eof_reached = 1;
 
-    printf("%s|hallo\n", (char *) token.value);
-
     return token;
 }
 
@@ -136,7 +139,7 @@ Token requestNextToken()
     {
         token.value = NULL;
         token.type = WG_Delimiter;
-
+        free(bracket_stack);
         return token;
     }
 
@@ -171,7 +174,38 @@ Token requestNextToken()
         token.type = WG_Assigenment;
         int value = chr;
         token.value = &value;
-    }
+        
+    } else if(chr == '(' || chr == '[' || chr == '{') {
+        token.type = WG_Bracket;
+        int value = chr;
+        token.value = &value;
+    
+        pushStack(bracket_stack, chr);
+
+    } else if(chr == ')' || chr == ']' || chr == '}') {
+        int throw_error = 0;
+        peekStack(bracket_stack);
+
+        if(bracket_stack->length == 0) {
+            throw_error = 1;
+        }
+        else if(chr == ')') {
+            if(peekStack(bracket_stack) == '(') {
+                popStack(bracket_stack);
+            } else throw_error = 1;
+        } else if(peekStack(bracket_stack) == chr - 2) {
+            popStack(bracket_stack);
+        } else throw_error = 1;
+
+        if(throw_error == 1) {
+            printf("ERORRRRR");
+            exit(1);
+        }
+
+        token.type = WG_Bracket;
+        int value = chr;
+        token.value = &value;        
+    } 
     else if (chr == ';')
     {
         token.value = NULL;
@@ -185,5 +219,6 @@ Token requestNextToken()
 
     if (peekNext() == EOF)
         eof_reached = 1;
+
     return token;
 }

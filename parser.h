@@ -6,6 +6,28 @@
 
 int needMore = TRUE;
 
+typedef struct WG_AST
+{
+    int operation;
+    union 
+    {
+        struct WG_AST * lhs;
+        int lhs1;
+        char * lhs2;
+    };
+    union
+    {
+        struct WG_AST * rhs;
+        int rhs1;
+        char * rhs2;
+    };
+} WG_AST;
+
+WG_AST * parseNext(Token curr, Token prev, int delim, int depth) {
+
+}
+
+
 void parse(FILE *file)
 {
     setWorkFile(file);
