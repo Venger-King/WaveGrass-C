@@ -8,13 +8,13 @@ typedef struct Stack
     int max_length;
 } Stack;
 
-Stack * createStack(int size)
+Stack *createStack(int size)
 {
-
-    Stack *stack = (Stack *) malloc(sizeof(Stack));
+    Stack *stack = (Stack *)malloc(sizeof(Stack));
     stack->max_length = size;
     stack->length = 0;
-    stack->value = (int*)malloc(sizeof(int) * size);
+    stack->value = (int *)malloc(sizeof(int) * size);
+
     return stack;
 }
 
@@ -24,15 +24,9 @@ int pushStack(Stack *stack, int item)
     {
         int new_stack[stack->max_length * 2];
 
-        for (int i = 0; i < stack->max_length; i++)
-        {
-            new_stack[i] = stack->value[i];
-        }
-
         stack->max_length *= 2;
-        stack->value = (int*)malloc(sizeof(int) * stack->max_length);
 
-        stack->value = new_stack;
+        stack->value = (int *)realloc(stack->value, sizeof(int) * stack->max_length);
 
         stack->value[stack->length] = item;
         stack->length++;
@@ -48,12 +42,28 @@ int pushStack(Stack *stack, int item)
 
 int popStack(Stack *stack)
 {
-    if(stack->length != 0) {
+    if (stack->length != 0)
+    {
         stack->length--;
-        stack->value[stack->length] = 0x0;
+
+        if (stack->max_length != 2)
+        {
+            if (stack->length == stack->max_length / 2)
+            {
+                stack->max_length /= 2;
+                stack->value = (int *)realloc(stack->value, sizeof(int) * stack->max_length);
+            }
+        }
     }
 }
 
-int peekStack(Stack *stack) {
+int peekStack(Stack *stack)
+{
     return stack->value[stack->length - 1];
+}
+
+void deleteStack(Stack *stack)
+{
+    free(stack->value);
+    free(stack);
 }

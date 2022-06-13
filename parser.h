@@ -1,10 +1,6 @@
 #include "lexer.h"
+#include "throwerror.h"
 #include <stdio.h>
-
-#define FALSE 0
-#define TRUE 1
-
-int needMore = TRUE;
 
 typedef struct WG_AST
 {
@@ -23,28 +19,38 @@ typedef struct WG_AST
     };
 } WG_AST;
 
-WG_AST * parseNext(Token curr, Token prev, int delim, int depth) {
+typedef union Toke_AST
+{
+    WG_AST * val1;
+    Token * val2;
+} Toke_AST;
 
+
+WG_AST * parseNext(Toke_AST * prev, int delim, int depth) {
+    Token curr = requestNextToken();
+
+    if(curr.type == WG_String || curr.type == WG_Number || curr.type == WG_Variable) {
+        Toke_AST toke;
+        toke.val2 = &curr;
+        return parseNext(&toke, delim, depth);
+    } else if(curr.type == WG_Assignment) {
+        if(!prev) {
+            
+        }
+        curr = requestNextToken();
+        while (curr.type != WG_Delimiter)
+        {
+            curr = requestNextToken();
+            if(curr.type == WG_Number) {
+                printf("%d\n", (double *) curr.value);
+            }
+        }
+    }
 }
 
 
 void parse(FILE *file)
 {
     setWorkFile(file);
-
-    Token token;
-    while (needMore)
-    {
-        token = requestNextToken();
-        if (token.type == WG_Number)
-        {
-            printf("%d\n", * (double *) token.value);
-        }
-        else
-        {
-            printf("%s\n", (char *) token.value);
-        }
-        if (token.type == WG_Delimiter)
-            needMore = FALSE;
-    }
+    parseNext(NULL, ';', 0);
 }
